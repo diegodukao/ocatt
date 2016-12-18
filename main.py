@@ -32,8 +32,8 @@ class TestGame(Widget):
 
     def init_game(self):
         self.setup_states()
-        self.set_state()
         self.load_models()
+        self.set_state()
         self.draw_some_stuff()
 
     def setup_states(self):
@@ -75,7 +75,7 @@ class TestGame(Widget):
 
 class OcattApp(App):
     def build(self):
-        pass
+        Window.clearcolor = (0, 0, 0, 1.)
 
 
 if __name__ == '__main__':
