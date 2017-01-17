@@ -2,13 +2,18 @@ import kivy
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.factory import Factory
 from kivy.properties import StringProperty
 from kivy.uix.widget import Widget
 from kivent_core.managers.resource_managers import texture_manager
 from random import randint, choice
 
+from gamesystems import VelocitySystem2D
+
 kivy.require('1.9.1')
 texture_manager.load_atlas('assets/background_objects.atlas')
+
+Factory.register('VelocitySystem2D', cls=VelocitySystem2D)
 
 
 class DebugPanel(Widget):
