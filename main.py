@@ -32,7 +32,7 @@ class TestGame(Widget):
     def __init__(self, **kwargs):
         super(TestGame, self).__init__(**kwargs)
         self.gameworld.init_gameworld(
-            ['renderer', 'position'],
+            ['renderer', 'position', 'velocity'],
             callback=self.init_game)
 
     def init_game(self):
@@ -47,7 +47,7 @@ class TestGame(Widget):
             systems_added=['renderer'],
             systems_removed=[],
             systems_paused=[],
-            systems_unpaused=['renderer'],
+            systems_unpaused=['renderer', 'velocity'],
             screenmanager_screen='main')
 
     def set_state(self):
@@ -64,16 +64,17 @@ class TestGame(Widget):
         init_entity = self.gameworld.init_entity
         for x in range(1000):
             pos = randint(0, Window.width), randint(0, Window.height)
-            model_key = choice(['star1-4', 'star1-4-2'])
+            vert_mesh_key = choice(['star1-4', 'star1-4-2'])
             create_dict = {
                 'position': pos,
+                'velocity': {'vx': randint(-75, 75), 'vy': randint(-75, 75)},
                 'renderer': {
                     'texture': 'star1',
-                    'model_key': model_key},
+                    'vert_mesh_key': vert_mesh_key},
             }
             # in addition to the args dict we pass in a list dictating
             # the order to create the components in.
-            init_entity(create_dict, ['position', 'renderer'])
+            init_entity(create_dict, ['position', 'velocity', 'renderer'])
         # If you do not set Renderer.force_update to True, call update_trigger
         # self.ids.renderer.update_trigger()
 
