@@ -1,19 +1,95 @@
 import kivy
+
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
-from kivy.factory import Factory
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, NumericProperty
 from kivy.uix.widget import Widget
 from kivent_core.managers.resource_managers import texture_manager
-from random import randint, choice
+import kivent_cymunk
 
-from gamesystems import VelocitySystem2D
+from functools import partial
+from math import radians
+from random import randint
 
 kivy.require('1.9.1')
 texture_manager.load_atlas('assets/background_objects.atlas')
 
-Factory.register('VelocitySystem2D', cls=VelocitySystem2D)
+
+class TestGame(Widget):
+    def __init__(self, **kwargs):
+        super(TestGame, self).__init__(**kwargs)
+        self.gameworld.init_gameworld(
+            ['cymunk_physics', 'rotate_renderer', 'rotate', 'position'],
+            callback=self.init_game)
+
+    def init_game(self):
+        self.setup_states()
+        self.set_state()
+
+    def setup_states(self):
+        self.gameworld.add_state(
+            state_name='main',
+            systems_added=['rotate_renderer'],
+            systems_removed=[],
+            systems_paused=[],
+            systems_unpaused=['rotate_renderer'],
+            screenmanager_screen='main')
+
+    def set_state(self):
+        self.gameworld.state = 'main'
+
+    def update(self, dt):
+        self.gameworld.update(dt)
+
+    def draw_some_stuff(self):
+        size = Window.size
+        w, h = size[0], size[1]
+        delete_time = 2.5
+        create_asteroid = self.create_asteroid
+        destroy_ent = self.destroy_created_entity
+        for x in range(100):
+            pos = (randint(0, w), randint(0, h))
+            ent_id = create_asteroid(pos)
+            Clock.schedule_once(partial(destroy_ent, ent_id), delete_time)
+        self.app.count += 100
+
+    def create_asteroid(self, pos):
+        x_vel = randint(-500, 500)
+        y_vel = randint(-500, 500)
+        angle = radians(randint(-360, 360))
+        angular_velocity = radians(randint(-150, -150))
+        shape_dict = {'inner_radius': 0, 'outer_radius': 20,
+                      'mass': 50, 'offset': (0, 0)}
+        col_shape = {'shape_type': 'circle', 'elasticity': .5,
+                     'collision_type': 1, 'shape_info': shape_dict,
+                     'friction': 1.0}
+        col_shapes = [col_shape]
+        physics_component = {
+            'main_shape': 'circle',
+            'velocity': (x_vel, y_vel),
+            'position': pos, 'angle': angle,
+            'angular_velocity': angular_velocity,
+            'vel_limit': 250,
+            'ang_vel_limit': radians(200),
+            'mass': 50, 'col_shapes': col_shapes}
+        create_component_dict = {
+            'cymunk_physics': physics_component,
+            'rotate_renderer': {
+                'texture': 'asteroid1',
+                'size': (45, 45),
+                'render': True
+            },
+            'position': pos, 'rotate': 0, }
+        component_order = ['position', 'rotate', 'rotate_renderer',
+                           'cymunk_physics']
+
+        return self.gameworld.init_entity(
+            create_component_dict, component_order)
+
+    def destroy_created_entity(self, ent_id, dt):
+        self.gameworld.remove_entity(ent_id)
+        self.app.count -= 1
 
 
 class DebugPanel(Widget):
@@ -28,60 +104,8 @@ class DebugPanel(Widget):
         Clock.schedule_once(self.update_fps, .05)
 
 
-class TestGame(Widget):
-    def __init__(self, **kwargs):
-        super(TestGame, self).__init__(**kwargs)
-        self.gameworld.init_gameworld(
-            ['renderer', 'position', 'velocity'],
-            callback=self.init_game)
-
-    def init_game(self):
-        self.setup_states()
-        self.load_models()
-        self.set_state()
-        self.draw_some_stuff()
-
-    def setup_states(self):
-        self.gameworld.add_state(
-            state_name='main',
-            systems_added=['renderer'],
-            systems_removed=[],
-            systems_paused=[],
-            systems_unpaused=['renderer', 'velocity'],
-            screenmanager_screen='main')
-
-    def set_state(self):
-        self.gameworld.state = 'main'
-
-    def load_models(self):
-        model_manager = self.gameworld.model_manager
-        model_manager.load_textured_rectangle(
-            'vertex_format_4f', 7., 7., 'star1', 'star1-4')
-        model_manager.load_textured_rectangle(
-            'vertex_format_4f', 10., 10., 'star1', 'star1-4-2')
-
-    def draw_some_stuff(self):
-        init_entity = self.gameworld.init_entity
-        for x in range(1000):
-            pos = randint(0, Window.width), randint(0, Window.height)
-            vert_mesh_key = choice(['star1-4', 'star1-4-2'])
-            create_dict = {
-                'position': pos,
-                'velocity': {'vx': randint(-75, 75), 'vy': randint(-75, 75)},
-                'renderer': {
-                    'texture': 'star1',
-                    'vert_mesh_key': vert_mesh_key},
-            }
-            # in addition to the args dict we pass in a list dictating
-            # the order to create the components in.
-            init_entity(create_dict, ['position', 'velocity', 'renderer'])
-        # If you do not set Renderer.force_update to True, call update_trigger
-        # self.ids.renderer.update_trigger()
-
-
 class OcattApp(App):
-    def build(self):
-        Window.clearcolor = (0, 0, 0, 1.)
+    count = NumericProperty(0)
 
 
 if __name__ == '__main__':
