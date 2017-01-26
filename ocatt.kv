@@ -21,6 +21,7 @@ TestGame:
             gameworld: gameworld
             zones: ['general']
             shader_source: 'assets/glsl/positionrotateshader.glsl'
+            gameview: 'camera1'
         CymunkPhysics:
             gameworld: root.gameworld
             zones: ['general']
@@ -30,6 +31,13 @@ TestGame:
             zone_to_use: 'touch'
             physics_system: 'cymunk_physics'
             touch_radius: 30
+            gameview: 'camera1'
+        GameView:
+            system_id: 'camera1'
+            gameworld: gameworld
+            size: root.size
+            pos: root.pos
+            do_scroll: True
 
     GameScreenManager:
         id: gamescreenmanager

@@ -21,7 +21,7 @@ class TestGame(Widget):
         super(TestGame, self).__init__(**kwargs)
         self.gameworld.init_gameworld(
             ['cymunk_physics', 'rotate_renderer', 'rotate', 'position',
-             'cymunk_touch'],
+             'cymunk_touch', 'camera1'],
             callback=self.init_game)
 
     def init_game(self):
@@ -44,11 +44,12 @@ class TestGame(Widget):
         self.gameworld.update(dt)
 
     def draw_some_stuff(self):
-        size = Window.size
-        w, h = size[0], size[1]
+        gameview = self.gameworld.system_manager['camera1']
+        x, y = int(-gameview.camera_pos[0]), int(-gameview.camera_pos[1])
+        w, h = int(gameview.size[0] + x), int(gameview.size[1] + y)
         create_asteroid = self.create_asteroid
         for x in range(100):
-            pos = (randint(0, w), randint(0, h))
+            pos = (randint(x, w), randint(y, h))
             create_asteroid(pos)
         self.app.count += 100
 
