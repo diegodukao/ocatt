@@ -20,7 +20,8 @@ class TestGame(Widget):
     def __init__(self, **kwargs):
         super(TestGame, self).__init__(**kwargs)
         self.gameworld.init_gameworld(
-            ['cymunk_physics', 'rotate_renderer', 'rotate', 'position'],
+            ['cymunk_physics', 'rotate_renderer', 'rotate', 'position',
+             'cymunk_touch'],
             callback=self.init_game)
 
     def init_game(self):
@@ -45,13 +46,10 @@ class TestGame(Widget):
     def draw_some_stuff(self):
         size = Window.size
         w, h = size[0], size[1]
-        delete_time = 2.5
         create_asteroid = self.create_asteroid
-        destroy_ent = self.destroy_created_entity
         for x in range(100):
             pos = (randint(0, w), randint(0, h))
-            ent_id = create_asteroid(pos)
-            Clock.schedule_once(partial(destroy_ent, ent_id), delete_time)
+            create_asteroid(pos)
         self.app.count += 100
 
     def create_asteroid(self, pos):

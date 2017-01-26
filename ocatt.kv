@@ -8,11 +8,11 @@ TestGame:
         id: gameworld
         gamescreenmanager: gamescreenmanager
         size_of_gameworld: 100*1024
-        zones: {'general': 20000}
+        zones: {'general': 20000, 'touch': 100}
         PositionSystem2D:
             system_id: 'position'
             gameworld: gameworld
-            zones: ['general']
+            zones: ['general', 'touch']
         RotateSystem2D:
             system_id: 'rotate'
             gameworld: gameworld
@@ -24,6 +24,12 @@ TestGame:
         CymunkPhysics:
             gameworld: root.gameworld
             zones: ['general']
+        CymunkTouchSystem:
+            gameworld: root.gameworld
+            zones: ['touch']
+            zone_to_use: 'touch'
+            physics_system: 'cymunk_physics'
+            touch_radius: 30
 
     GameScreenManager:
         id: gamescreenmanager
